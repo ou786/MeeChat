@@ -1,0 +1,36 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f4f6f8;
+  margin: 0;
+  padding: 0;
+}
+@keyframes fadeInOut {
+  from { opacity: 0.4; }
+  to { opacity: 1; }
+}
+
+@media (max-width: 600px) {
+  body {
+    font-size: 14px;
+  }
+
+  .chat-container {
+    padding: 1rem !important;
+  }
+
+  input, button {
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .heading {
+    font-size: 18px;
+  }
+}
+
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
