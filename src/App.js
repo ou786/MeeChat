@@ -33,7 +33,7 @@ function App() {
   } catch (err) {
     console.error("Failed to fetch recent chats:", err);
   }
-}, [user?.id]);
+}, [user]);
 
   useEffect(() => {
     if (user) fetchRecentChats();
