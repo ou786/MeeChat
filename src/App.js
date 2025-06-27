@@ -35,7 +35,6 @@ function App() {
   }
 }, [user?.id]);
 
-
   useEffect(() => {
     if (user) fetchRecentChats();
   }, [user, fetchRecentChats]);
