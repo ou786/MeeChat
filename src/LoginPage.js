@@ -8,7 +8,7 @@ function LoginPage({ onLogin }) {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://127.0.0.1:8000/register', { username });
+      const res = await axios.post('https://meechat-backend.onrender.com/register', { username });
       const user = res.data;
       localStorage.setItem('user', JSON.stringify(user));
       onLogin(user);

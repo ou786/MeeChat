@@ -28,7 +28,7 @@ function App() {
   // Fetch recent chats
   const fetchRecentChats = useCallback(async () => {
   try {
-    const res = await axios.get(`http://127.0.0.1:8000/recent_chats/${user.id}`);
+    const res = await axios.get(`https://meechat-backend.onrender.com/recent_chats/${user.id}`);
     setRecentChats(res.data);
   } catch (err) {
     console.error("Failed to fetch recent chats:", err);
@@ -48,7 +48,7 @@ function App() {
   // Fetch user map
   useEffect(() => {
     const fetchUsers = async () => {
-      const res = await axios.get('http://127.0.0.1:8000/users');
+      const res = await axios.get('https://meechat-backend.onrender.com/users');
       const map = {};
       res.data.forEach(u => map[u.id] = u.username);
       setUsersMap(map);
@@ -61,13 +61,13 @@ function App() {
   const interval = setInterval(async () => {
     if (!chatWith) return;
     try {
-      const res = await axios.get(`http://127.0.0.1:8000/typing_status`, {
+      const res = await axios.get(`https://meechat-backend.onrender.com/typing_status`, {
         params: { user_id: chatWith.id },
       });
 
       setIsTyping(res.data.is_typing); // ✅ Update typing status here
 
-      const statusRes = await axios.get(`http://127.0.0.1:8000/online_status/${chatWith.id}`);
+      const statusRes = await axios.get(`https://meechat-backend.onrender.com/online_status/${chatWith.id}`);
       setChatWith(prev => prev ? { ...prev, isOnline: statusRes.data.online } : null);
     } catch (err) {
       console.error('Polling failed:', err);
@@ -82,7 +82,7 @@ function App() {
   if (!user || !chatWith) return;
   try {
     // 1. Fetch messages
-    const res = await axios.get('http://127.0.0.1:8000/messages', {
+    const res = await axios.get('https://meechat-backend.onrender.com/messages', {
       params: {
         from_user: chatWith.id,
         to_user: user.id,
@@ -91,13 +91,13 @@ function App() {
     setMessages(res.data);
 
     // 2. Mark as seen
-    await axios.post('http://127.0.0.1:8000/messages/seen', {
+    await axios.post('https://meechat-backend.onrender.com/messages/seen', {
       from_user: chatWith.id,
       to_user: user.id,
     });
 
     // 3. Check online status
-    const statusRes = await axios.get(`http://127.0.0.1:8000/online_status/${chatWith.id}`);
+    const statusRes = await axios.get(`https://meechat-backend.onrender.com/online_status/${chatWith.id}`);
     const isOnline = statusRes.data.online;
     setChatWith(prev => ({ ...prev, isOnline }));
 
@@ -118,7 +118,7 @@ function App() {
   useEffect(() => {
     const interval = setInterval(() => {
       if (user) {
-        axios.post('http://127.0.0.1:8000/update_last_seen', {
+        axios.post('https://meechat-backend.onrender.com/update_last_seen', {
           user_id: user.id,
         }).catch(err => {
           console.error('Last seen update failed:', err);

@@ -12,7 +12,7 @@ function EmailRegister({ onRegistered, setIsRegistering }) {
 
   const sendOtp = async () => {
     try {
-      await axios.post('http://127.0.0.1:8000/send_email_otp', {
+      await axios.post('https://meechat-backend.onrender.com/send_email_otp', {
         email,
         username,
       });
@@ -27,7 +27,7 @@ function EmailRegister({ onRegistered, setIsRegistering }) {
 
   const handleRegister = async () => {
     try {
-      const res = await axios.post('http://127.0.0.1:8000/verify_email_otp_and_register', {
+      const res = await axios.post('https://meechat-backend.onrender.com/verify_email_otp_and_register', {
         email,
         otp,
         password,

@@ -17,7 +17,7 @@ function MessageForm({ senderId, receiverId, onSend, onMessageSent }) {
     };
 
     try {
-      await axios.post('http://127.0.0.1:8000/messages', newMessage);
+      await axios.post('https://meechat-backend.onrender.com/messages', newMessage);
       setContent('');
       onSend();
       if (onMessageSent) onMessageSent();
@@ -44,7 +44,7 @@ function MessageForm({ senderId, receiverId, onSend, onMessageSent }) {
         image: base64Image,
       };
       try {
-        await axios.post('http://127.0.0.1:8000/messages', newMessage);
+        await axios.post('https://meechat-backend.onrender.com/messages', newMessage);
         onSend();
         if (onMessageSent) onMessageSent();
       } catch (err) {

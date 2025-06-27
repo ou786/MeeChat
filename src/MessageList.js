@@ -24,7 +24,7 @@ function MessageList({ messages, currentUserId, usersMap, chatWithId, onRefresh 
   if (!message) return;
 
   try {
-    await axios.put(`http://127.0.0.1:8000/messages/${id}`, {
+    await axios.put(`https://meechat-backend.onrender.com/messages/${id}`, {
       sender_id: message.sender_id,
       receiver_id: message.receiver_id,
       content: editContent,
@@ -42,7 +42,7 @@ function MessageList({ messages, currentUserId, usersMap, chatWithId, onRefresh 
   const handleDelete = async (id) => {
   if (window.confirm('Delete this message?')) {
     try {
-      await axios.delete(`http://127.0.0.1:8000/messages/${id}`);
+      await axios.delete(`https://meechat-backend.onrender.com/messages/${id}`);
       onRefresh();  // Refresh messages
     } catch (err) {
       console.error('Delete failed:', err);
