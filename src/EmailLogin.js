@@ -53,15 +53,24 @@ function EmailLogin({ onLogin , setIsRegistering}) {
 
       <button type="submit" style={button}>Login</button>
 
-      <p style={{ marginTop: '1rem' }}>
+      <p style={{ marginTop: '1rem', textAlign: 'center' }}>
   <button
     type="button"
-    style={{ border: 'none', background: 'none', color: '#007bff', cursor: 'pointer' }}
+    style={{
+      border: 'none',
+      background: 'none',
+      color: '#007bff',
+      cursor: 'pointer',
+      fontSize: '1rem',
+      textDecoration: 'underline',
+      padding: '0.5rem',
+    }}
     onClick={() => setIsResetting(true)}
   >
     Forgot Password?
   </button>
 </p>
+
 
       <p style={switchText}>
         Don't have an account?{' '}
