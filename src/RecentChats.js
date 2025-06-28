@@ -1,89 +1,82 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import axios from 'axios';
 
-function RecentChats({ currentUser, chats,chat, onSelectChat }) {
-      const recentChats = chats || []; // ✅ fix
-
+function RecentChats({ currentUser, chats, onSelectChat, onDeleteSentMessages }) {
+  const recentChats = chats || [];
 
   return (
-  <div style={container}>
-    <ul style={{
-  overflowX: 'auto',
-  maxHeight: '50vh',
-  padding: 0,
-  margin: 0,
-  listStyle: 'none',
-}}>
+    <div style={container}>
+      <ul style={listStyle}>
+        {recentChats
+          .filter(chat => chat && chat.username)
+          .map(chat => {
+            const isUnread = chat.last_message &&
+              chat.last_message.sender_id !== currentUser.id &&
+              !chat.last_message.seen;
 
-      {recentChats
-  .filter(chat => chat && chat.username)
-  .map(chat => {
-    const isUnread = chat.last_message &&
-                     chat.last_message.sender_id !== currentUser.id &&
-                     !chat.last_message.seen;
+            return (
+              <li
+                key={chat.id}
+                onClick={() => onSelectChat(chat)}
+                style={{
+                  ...chatCard,
+                  backgroundColor: isUnread ? '#fff8dc' : '#f9f9f9',
+                  borderLeft: isUnread ? '4px solid orange' : 'none',
+                }}
+              >
+                <div style={avatar(chat.username)}>
+                  {chat.username[0].toUpperCase()}
+                </div>
 
-    return (
-      <li
-        key={chat.id}
-        onClick={() => onSelectChat(chat)}
-        style={{
-          ...chatCard,
-          backgroundColor: isUnread ? '#fff8dc' : '#f9f9f9',
-          borderLeft: isUnread ? '4px solid orange' : 'none'
-        }}
-      >
-        <div style={avatar(chat.username)}>
-          {chat.username[0].toUpperCase()}
-        </div>
+                <div style={{ flex: 1 }}>
+                  <div style={username}>
+                    {chat.username}
+                    {isUnread && (
+                      <span style={{ color: 'orange', fontSize: '12px', marginLeft: '6px' }}>
+                        🟠 New
+                      </span>
+                    )}
+                  </div>
+                  <div style={lastMessage}>
+                    {chat.last_message?.content || 'No messages yet'}
+                  </div>
+                  <div style={timestamp}>
+                    {chat.last_message?.timestamp
+                      ? new Date(chat.last_message.timestamp).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
+                      : ''}
+                  </div>
+                </div>
 
-        <div style={{ flex: 1 }}>
-          <div style={username}>
-            {chat.username}
-            {isUnread && (
-              <span style={{ color: 'orange', fontSize: '12px', marginLeft: '6px' }}>
-                🟠 New
-              </span>
-            )}
-          </div>
-
-          <div style={lastMessage}>
-            {chat.last_message?.content || 'No messages yet'}
-          </div>
-
-          <div style={timestamp}>
-            {chat.last_message?.timestamp
-              ? new Date(chat.last_message.timestamp).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })
-              : ''}
-          </div>
-        </div>
-      </li>
-    );
-  })}
-
-
-    </ul>
-  </div>
-);
-
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation(); // avoid opening chat
+                    if (window.confirm(`Delete messages you've sent to ${chat.username}?`)) {
+                      axios
+                        .delete(`https://meechat-backend.onrender.com/messages/${currentUser.id}/to/${chat.id}`)
+                        .then(() => onDeleteSentMessages && onDeleteSentMessages());
+                    }
+                  }}
+                  style={deleteBtn}
+                >
+                  🗑️
+                </button>
+              </li>
+            );
+          })}
+      </ul>
+    </div>
+  );
 }
 
-// ──────── Styles ────────
+// ─────── Styles ───────
 const container = {
   padding: '1rem',
   backgroundColor: '#fff',
   borderRadius: '10px',
   boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
-  marginBottom: '2rem',
-};
-
-const heading = {
-  fontSize: '1.2rem',
-  marginBottom: '1rem',
-  borderBottom: '1px solid #ddd',
-  paddingBottom: '0.5rem',
 };
 
 const listStyle = {
@@ -122,10 +115,6 @@ const username = {
   fontSize: '14px',
 };
 
-const timestamp = {
-  fontSize: '12px',
-  color: '#777',
-};
 const lastMessage = {
   fontSize: '13px',
   color: '#555',
@@ -136,5 +125,18 @@ const lastMessage = {
   maxWidth: '200px',
 };
 
+const timestamp = {
+  fontSize: '12px',
+  color: '#777',
+};
+
+const deleteBtn = {
+  border: 'none',
+  background: 'transparent',
+  cursor: 'pointer',
+  fontSize: '16px',
+  marginLeft: '8px',
+  color: '#dc3545',
+};
 
 export default RecentChats;

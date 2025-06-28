@@ -16,26 +16,21 @@ function App() {
   const [recentChats, setRecentChats] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
 
-
   // Load user from sessionStorage
   useEffect(() => {
     const stored = sessionStorage.getItem('user');
-    if (stored) {
-      setUser(JSON.parse(stored));
-    }
+    if (stored) setUser(JSON.parse(stored));
   }, []);
 
   // Fetch recent chats
   const fetchRecentChats = useCallback(async () => {
-  try {
-    const res = await axios.get(`https://meechat-backend.onrender.com/recent_chats/${user.id}`);
-    setRecentChats(res.data);
-  } catch (err) {
-    console.error("Failed to fetch recent chats:", err);
-  }
-}, [user]);
-
-
+    try {
+      const res = await axios.get(`https://meechat-backend.onrender.com/recent_chats/${user.id}`);
+      setRecentChats(res.data);
+    } catch (err) {
+      console.error("Failed to fetch recent chats:", err);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (user) fetchRecentChats();
@@ -57,74 +52,57 @@ function App() {
     if (user) fetchUsers();
   }, [user]);
 
-  // Typing and online tracking
+  // Poll typing & online status
   useEffect(() => {
-  const interval = setInterval(async () => {
-    if (!chatWith) return;
-    try {
-      const res = await axios.get(`https://meechat-backend.onrender.com/typing_status`, {
-        params: { user_id: chatWith.id },
-      });
+    const interval = setInterval(async () => {
+      if (!chatWith) return;
+      try {
+        const typingRes = await axios.get(`https://meechat-backend.onrender.com/typing_status`, {
+          params: { user_id: chatWith.id },
+        });
+        setIsTyping(typingRes.data.is_typing);
 
-      setIsTyping(res.data.is_typing); // ✅ Update typing status here
+        const statusRes = await axios.get(`https://meechat-backend.onrender.com/online_status/${chatWith.id}`);
+        setChatWith(prev => prev ? { ...prev, isOnline: statusRes.data.online } : null);
+      } catch (err) {
+        console.error('Polling failed:', err);
+      }
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [chatWith]);
 
-      const statusRes = await axios.get(`https://meechat-backend.onrender.com/online_status/${chatWith.id}`);
-      setChatWith(prev => prev ? { ...prev, isOnline: statusRes.data.online } : null);
-    } catch (err) {
-      console.error('Polling failed:', err);
-    }
-  }, 2000);
-  return () => clearInterval(interval);
-}, [chatWith]);
-
-
-  // Messages
+  // Fetch messages
   const fetchMessages = useCallback(async () => {
-  if (!user || !chatWith) return;
-  try {
-    // 1. Fetch messages
-    const res = await axios.get('https://meechat-backend.onrender.com/messages', {
-      params: {
+    if (!user || !chatWith) return;
+    try {
+      const res = await axios.get('https://meechat-backend.onrender.com/messages', {
+        params: {
+          from_user: chatWith.id,
+          to_user: user.id,
+        },
+      });
+      setMessages(res.data);
+
+      await axios.post('https://meechat-backend.onrender.com/messages/seen', {
         from_user: chatWith.id,
         to_user: user.id,
-      },
-    });
-    setMessages(res.data);
+      });
 
-    // 2. Mark as seen
-    await axios.post('https://meechat-backend.onrender.com/messages/seen', {
-      from_user: chatWith.id,
-      to_user: user.id,
-    });
+      const statusRes = await axios.get(`https://meechat-backend.onrender.com/online_status/${chatWith.id}`);
+      setChatWith(prev => ({ ...prev, isOnline: statusRes.data.online }));
 
-    // 3. Check online status
-    const statusRes = await axios.get(`https://meechat-backend.onrender.com/online_status/${chatWith.id}`);
-    const isOnline = statusRes.data.online;
-    setChatWith(prev => ({ ...prev, isOnline }));
-
-    // ✅ 4. Refresh recent chats list
-    await fetchRecentChats();
-
-  } catch (err) {
-    console.error('Message fetching failed:', err);
-  }
-}, [user, chatWith, fetchRecentChats]); // ← also add `fetchRecentChats` in deps
-
-
-const handleDeleteChat = async () => {
-  if (window.confirm("Delete all messages you've sent to this user?")) {
-    await axios.delete(`https://meechat-backend.onrender.com/messages/${user.id}/to/${chatWith.id}`);
-    await fetchMessages(); // refresh messages
-    await fetchRecentChats(); // refresh recent list
-  }
-};
-
+      await fetchRecentChats();
+    } catch (err) {
+      console.error('Message fetching failed:', err);
+    }
+  }, [user, chatWith, fetchRecentChats]);
 
   useEffect(() => {
     const interval = setInterval(fetchMessages, 2000);
     return () => clearInterval(interval);
   }, [fetchMessages]);
 
+  // Update last seen
   useEffect(() => {
     const interval = setInterval(() => {
       if (user) {
@@ -138,94 +116,83 @@ const handleDeleteChat = async () => {
     return () => clearInterval(interval);
   }, [user]);
 
-  // ─────── UI Rendering ───────
+  // Handle delete sent messages
+  const handleDeleteChat = async () => {
+    if (window.confirm("Delete all messages you've sent to this user?")) {
+      await axios.delete(`https://meechat-backend.onrender.com/messages/${user.id}/to/${chatWith.id}`);
+      await fetchMessages();
+      await fetchRecentChats();
+    }
+  };
+
+  // ─────── UI ───────
   if (!user) {
-    return isRegistering ? (
-      <EmailRegister onRegistered={setUser} setIsRegistering={setIsRegistering} />
-    ) : (
-      <EmailLogin onLogin={setUser} setIsRegistering={setIsRegistering} />
-    );
+    return isRegistering
+      ? <EmailRegister onRegistered={setUser} setIsRegistering={setIsRegistering} />
+      : <EmailLogin onLogin={setUser} setIsRegistering={setIsRegistering} />;
   }
 
   if (!chatWith) {
-    <div style={{
-  padding: '2rem',
-  maxWidth: '700px',
-  margin: '0 auto',
-}}></div>
     return (
-  <div style={welcomeWrapper}>
-  <div style={topBar}>
-<h2 style={{ fontWeight: 500, fontSize: '1.8rem', color: '#333' }}>
-  MeeChat <span style={{ fontWeight: 300, color: '#777' }}>| {user.username}</span>
-</h2>
+      <div style={welcomeWrapper}>
+        <div style={topBar}>
+          <h2 style={{ fontWeight: 500, fontSize: '1.8rem', color: '#333' }}>
+            MeeChat <span style={{ fontWeight: 300, color: '#777' }}>| {user.username}</span>
+          </h2>
+          <button
+            onClick={() => {
+              sessionStorage.removeItem('user');
+              setUser(null);
+              setIsRegistering(false);
+            }}
+            style={buttonStyle}
+          >
+            Logout
+          </button>
+        </div>
 
-
-
-
-    <button
-      onClick={() => {
-        sessionStorage.removeItem('user');
-        setUser(null);
-        setIsRegistering(false);
-      }}
-      style={buttonStyle}
-    >
-      Logout
-    </button>
-  </div>
-
-  <div style={mainContent}>
-    <div style={sidePanel}>
-        <h3 style={sectionHeading}>Recent Chats</h3>
-
-      <RecentChats currentUser={user} chats={recentChats} onSelectChat={setChatWith} />
-    </div>
-    <div style={sidePanel}>
-      <h3 style={sectionHeading}>Available Users</h3>
-      <UserList currentUser={user} onSelect={setChatWith} />
-    </div>
-  </div>
-</div>
-
-);
-
-
+        <div style={mainContent}>
+          <div style={sidePanel}>
+            <h3 style={sectionHeading}>Recent Chats</h3>
+            <RecentChats currentUser={user} chats={recentChats} onSelectChat={setChatWith} onDeleteSentMessages={fetchRecentChats}
+ />
+          </div>
+          <div style={sidePanel}>
+            <h3 style={sectionHeading}>Available Users</h3>
+            <UserList currentUser={user} onSelect={setChatWith} />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-
-    
-<div style={mainContainer}>
+    <div style={mainContainer}>
       <div style={{
-  padding: '2rem',
-  maxWidth: '700px',
-  margin: '0 auto',
-}}>
+        padding: '2rem',
+        maxWidth: '700px',
+        margin: '0 auto',
+      }}>
+        <button onClick={() => setChatWith(null)} style={{
+          marginLeft: '10px',
+          fontSize: '16px',
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          color: '#007bff',
+        }}>
+          ← Back
+        </button>
 
-  <button onClick={() => setChatWith(null)} style={{
-    marginLeft: '10px',
-    fontSize: '16px',
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    color: '#007bff',
-  }}>
-    ← Back
-  </button>
+        <h2 style={{ margin: '0 auto', fontSize: '18px' }}>
+          {chatWith.username}
+          <span style={{ color: chatWith.isOnline ? 'green' : 'black', marginLeft: '10px' }}>
+            ● {chatWith.isOnline ? 'Online' : 'Offline'}
+          </span>
+        </h2>
+      </div>
 
-
-
-  <h2 style={{ margin: '0 auto', fontSize: '18px' }}>
-     {chatWith.username}
-    <span style={{ color: chatWith.isOnline ? 'green' : 'black', marginLeft: '10px' }}>
-      ● {chatWith.isOnline ? 'Online' : 'Offline'}
-    </span>
-  </h2>
-</div>
-
-  <button onClick={handleDeleteChat}>🗑️ Delete Sent Messages</button>
-
+      <button onClick={handleDeleteChat}>🗑️ Delete Sent Messages</button>
 
       <MessageList
         messages={messages}
@@ -235,11 +202,10 @@ const handleDeleteChat = async () => {
       />
 
       {isTyping && (
-  <div style={{ marginBottom: '10px', color: '#888', fontStyle: 'italic' }}>
-    {chatWith.username} is typing...
-  </div>
-)}
-
+        <div style={{ marginBottom: '10px', color: '#888', fontStyle: 'italic' }}>
+          {chatWith.username} is typing...
+        </div>
+      )}
 
       <MessageForm
         senderId={user.id}
@@ -251,6 +217,7 @@ const handleDeleteChat = async () => {
   );
 }
 
+// ─────── Styles ───────
 const mainContainer = {
   padding: '2rem',
   maxWidth: '100%',
@@ -271,15 +238,6 @@ const topBar = {
   marginBottom: '2rem',
 };
 
-const logoutBtn = {
-  backgroundColor: '#dc3545',
-  color: '#fff',
-  padding: '8px 16px',
-  border: 'none',
-  borderRadius: '6px',
-  cursor: 'pointer',
-};
-
 const mainContent = {
   display: 'flex',
   gap: '2rem',
@@ -296,8 +254,6 @@ const sectionHeading = {
   marginBottom: '1rem',
   color: '#333',
 };
-
-
 
 const buttonStyle = {
   padding: '10px 20px',
