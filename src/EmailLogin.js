@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import ForgotPassword from './ForgotPassword';
+
 
 function EmailLogin({ onLogin , setIsRegistering}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
+
 
   const handleLogin = async () => {
     try {
@@ -18,6 +22,11 @@ function EmailLogin({ onLogin , setIsRegistering}) {
       setError(err.response?.data?.detail || 'Login failed. Try again.');
     }
   };
+
+  if (isResetting) {
+  return <ForgotPassword onBack={() => setIsResetting(false)} />;
+}
+
 
   return (
   <div style={wrapper}>
@@ -50,6 +59,16 @@ function EmailLogin({ onLogin , setIsRegistering}) {
           Register
         </button>
       </p>
+      <p style={{ marginTop: '1rem' }}>
+  <button
+    type="button"
+    style={{ border: 'none', background: 'none', color: '#007bff', cursor: 'pointer' }}
+    onClick={() => setIsResetting(true)}
+  >
+    Forgot Password?
+  </button>
+</p>
+
 
       {error && <p style={errorText}>{error}</p>}
     </form>
