@@ -10,7 +10,11 @@ function ForgotPassword({ onBack }) {
 
   const sendOtp = async () => {
     try {
-      await axios.post('https://meechat-backend.onrender.com/request-password-reset', { email });
+      await axios.post('https://meechat-backend.onrender.com/request-password-reset', { email },{
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
       setMessage("OTP sent to your email.");
       setStep(2);
     } catch (err) {

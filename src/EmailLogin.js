@@ -53,12 +53,6 @@ function EmailLogin({ onLogin , setIsRegistering}) {
 
       <button type="submit" style={button}>Login</button>
 
-      <p style={switchText}>
-        Don't have an account?{' '}
-        <button onClick={() => setIsRegistering(true)} style={linkBtn}>
-          Register
-        </button>
-      </p>
       <p style={{ marginTop: '1rem' }}>
   <button
     type="button"
@@ -68,6 +62,14 @@ function EmailLogin({ onLogin , setIsRegistering}) {
     Forgot Password?
   </button>
 </p>
+
+      <p style={switchText}>
+        Don't have an account?{' '}
+        <button onClick={() => setIsRegistering(true)} style={linkBtn}>
+          Register
+        </button>
+      </p>
+      
 
 
       {error && <p style={errorText}>{error}</p>}
