@@ -35,6 +35,8 @@ function App() {
   }
 }, [user]);
 
+
+
   useEffect(() => {
     if (user) fetchRecentChats();
   }, [user, fetchRecentChats]);
@@ -109,6 +111,15 @@ function App() {
 }, [user, chatWith, fetchRecentChats]); // ← also add `fetchRecentChats` in deps
 
 
+const handleDeleteChat = async () => {
+  if (window.confirm("Delete all messages you've sent to this user?")) {
+    await axios.delete(`https://meechat-backend.onrender.com/messages/${user.id}/to/${chatWith.id}`);
+    await fetchMessages(); // refresh messages
+    await fetchRecentChats(); // refresh recent list
+  }
+};
+
+
   useEffect(() => {
     const interval = setInterval(fetchMessages, 2000);
     return () => clearInterval(interval);
@@ -148,6 +159,8 @@ function App() {
 <h2 style={{ fontWeight: 500, fontSize: '1.8rem', color: '#333' }}>
   MeeChat <span style={{ fontWeight: 300, color: '#777' }}>| {user.username}</span>
 </h2>
+
+
 
 
     <button
@@ -201,6 +214,8 @@ function App() {
     ← Back
   </button>
 
+
+
   <h2 style={{ margin: '0 auto', fontSize: '18px' }}>
      {chatWith.username}
     <span style={{ color: chatWith.isOnline ? 'green' : 'black', marginLeft: '10px' }}>
@@ -208,6 +223,9 @@ function App() {
     </span>
   </h2>
 </div>
+
+  <button onClick={handleDeleteChat}>🗑️ Delete Sent Messages</button>
+
 
       <MessageList
         messages={messages}
