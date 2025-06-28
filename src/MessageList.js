@@ -6,12 +6,12 @@ const formatTimestamp = (timestamp) => {
 };
 
 function MessageList({ messages, currentUserId, usersMap, chatWithId, onRefresh }) {
-  const bottomRef = useRef(null);
   const scrollContainerRef = useRef(null);
-  const shouldScrollRef = useRef(true); // ✅ track scroll behavior without re-renders
-
+  const bottomRef = useRef(null);
   const [editMessageId, setEditMessageId] = useState(null);
   const [editContent, setEditContent] = useState('');
+  const [hasUserScrolled, setHasUserScrolled] = useState(false);
+  const firstLoad = useRef(true); // ✅ detect first load of chat
 
   const handleEdit = (msg) => {
     setEditMessageId(msg.id);
@@ -21,7 +21,6 @@ function MessageList({ messages, currentUserId, usersMap, chatWithId, onRefresh 
   const submitEdit = async (id) => {
     const message = messages.find((msg) => msg.id === id);
     if (!message) return;
-
     try {
       await axios.put(`https://meechat-backend.onrender.com/messages/${id}`, {
         sender_id: message.sender_id,
@@ -48,29 +47,30 @@ function MessageList({ messages, currentUserId, usersMap, chatWithId, onRefresh 
     }
   };
 
-  // Track scroll position accurately using a ref
+  // 🚩 Track if user scrolled manually
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    const handleScroll = () => {
-      const isNearBottom =
-        container.scrollHeight - container.scrollTop - container.clientHeight < 100;
-      shouldScrollRef.current = isNearBottom;
+    const onScroll = () => {
+      const atBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight < 50;
+      setHasUserScrolled(!atBottom);
     };
 
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
+    container.addEventListener('scroll', onScroll);
+    return () => container.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Scroll to bottom ONLY if user was already near bottom
+  // ✅ Scroll to bottom: ONLY on first load or if user hasn't scrolled manually
   useEffect(() => {
     const container = scrollContainerRef.current;
     const bottom = bottomRef.current;
     if (!container || !bottom) return;
 
-    if (shouldScrollRef.current) {
-      bottom.scrollIntoView({ behavior: 'smooth' });
+    if (firstLoad.current || !hasUserScrolled) {
+      bottom.scrollIntoView({ behavior: firstLoad.current ? 'auto' : 'smooth' });
+      firstLoad.current = false; // 🔓 only first time scroll forcibly
     }
   }, [messages]);
 
@@ -83,10 +83,7 @@ function MessageList({ messages, currentUserId, usersMap, chatWithId, onRefresh 
           const isEditing = editMessageId === msg.id;
 
           return (
-            <li
-              key={msg.id}
-              style={{ display: 'flex', justifyContent: isOwn ? 'flex-end' : 'flex-start' }}
-            >
+            <li key={msg.id} style={{ display: 'flex', justifyContent: isOwn ? 'flex-end' : 'flex-start' }}>
               <div
                 style={{
                   backgroundColor: isOwn ? '#dcf8c6' : '#ffffff',
@@ -100,14 +97,7 @@ function MessageList({ messages, currentUserId, usersMap, chatWithId, onRefresh 
                   wordBreak: 'break-word',
                 }}
               >
-                <div
-                  style={{
-                    fontSize: '12px',
-                    fontWeight: 500,
-                    marginBottom: '5px',
-                    color: '#555',
-                  }}
-                >
+                <div style={{ fontSize: '12px', fontWeight: 500, marginBottom: '5px', color: '#555' }}>
                   {senderName}
                 </div>
 
@@ -127,26 +117,13 @@ function MessageList({ messages, currentUserId, usersMap, chatWithId, onRefresh 
                     <div>{msg.content}</div>
                     {msg.image && (
                       <div style={{ marginTop: '5px' }}>
-                        <img
-                          src={msg.image}
-                          alt="sent"
-                          style={{ maxWidth: '100%', borderRadius: '10px' }}
-                        />
+                        <img src={msg.image} alt="sent" style={{ maxWidth: '100%', borderRadius: '10px' }} />
                       </div>
                     )}
-                    <div
-                      style={{
-                        fontSize: '10px',
-                        color: '#888',
-                        marginTop: '5px',
-                        textAlign: 'right',
-                      }}
-                    >
+                    <div style={{ fontSize: '10px', color: '#888', marginTop: '5px', textAlign: 'right' }}>
                       {formatTimestamp(msg.timestamp)}
                       {isOwn && (
-                        <span
-                          style={{ marginLeft: '6px', color: msg.seen ? 'green' : '#aaa' }}
-                        >
+                        <span style={{ marginLeft: '6px', color: msg.seen ? 'green' : '#aaa' }}>
                           {msg.seen ? '👁️' : '✔️'}
                         </span>
                       )}
