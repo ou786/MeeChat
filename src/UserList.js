@@ -8,7 +8,7 @@ function UserList({ currentUser, onSelect }) {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const res = await axios.get('http://127.0.0.1:8000/users');
+      const res = await axios.get('https://meechat-backend.onrender.com/users');
       const filtered = res.data.filter(u => u.id !== currentUser.id);
       setUsers(filtered);
     };
@@ -21,7 +21,7 @@ function UserList({ currentUser, onSelect }) {
       const newStatus = {};
       for (let user of users) {
         try {
-          const res = await axios.get(`http://127.0.0.1:8000/online_status`, {
+          const res = await axios.get(`https://meechat-backend.onrender.com/online_status`, {
             params: { user_id: user.id }
           });
           newStatus[user.id] = res.data.online;

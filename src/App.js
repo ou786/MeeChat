@@ -192,8 +192,6 @@ function App() {
         </h2>
       </div>
 
-      <button onClick={handleDeleteChat}>🗑️ Delete Sent Messages</button>
-
       <MessageList
         messages={messages}
         currentUserId={user.id}
