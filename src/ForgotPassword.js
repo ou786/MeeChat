@@ -50,31 +50,46 @@ function ForgotPassword({ onBack }) {
     <div style={{ maxWidth: '400px', margin: '2rem auto' }}>
       <h2>Reset Password</h2>
       {step === 1 && (
-        <>
-          <input
-            type="email"
-            placeholder="Enter registered email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={inputStyle}
-          />
-          <button onClick={sendOtp} style={btnStyle}>Send OTP</button>
-        </>
-      )}
+  <form
+    onSubmit={(e) => {
+      e.preventDefault();
+      sendOtp();
+    }}
+  >
+    <input
+      type="email"
+      placeholder="Enter registered email"
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+      required
+      style={inputStyle}
+    />
+    <button type="submit" style={btnStyle}>
+      Send OTP
+    </button>
+  </form>
+)}
 
-      {step === 2 && (
-        <>
-          <input
-            type="text"
-            placeholder="Enter OTP"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            style={inputStyle}
-          />
-          <button onClick={verifyOtp} style={btnStyle}>Verify OTP</button>
-        </>
-      )}
+{step === 2 && (
+  <form
+    onSubmit={(e) => {
+      e.preventDefault();
+      verifyOtp();
+    }}
+  >
+    <input
+      type="text"
+      placeholder="Enter OTP"
+      value={otp}
+      onChange={(e) => setOtp(e.target.value)}
+      style={inputStyle}
+    />
+    <button type="submit" style={btnStyle}>
+      Verify OTP
+    </button>
+  </form>
+)}
+
 
       {step === 3 && (
         <>
