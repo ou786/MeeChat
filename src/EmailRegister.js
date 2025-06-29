@@ -48,6 +48,11 @@ function EmailRegister({ onRegistered, setIsRegistering }) {
         otpSent ? handleRegister() : sendOtp();
       }}
     >
+      <h1 style={appTitle}>MeeChat</h1>
+
+
+            <p style={tagline}>Connect<span style={{ margin: '0 4px' }}>.</span>Chat<span style={{ margin: '0 4px' }}>.</span>Feel Belonged...</p>
+      
       <h2 style={headingStyle}>Register</h2>
 
       <input
@@ -115,6 +120,22 @@ function EmailRegister({ onRegistered, setIsRegistering }) {
   
 }
 
+const tagline = {
+  textAlign: 'center',
+  fontSize: '16px',
+  fontStyle: 'italic',
+  color: '#555',
+  marginBottom: '1.5rem',
+};
+
+const appTitle = {
+  textAlign: 'center',
+  fontSize: '2.5rem',
+  fontWeight: 'bold',
+  marginBottom: '0.5rem',
+  color: '#007bff', // or any theme color you want
+};
+
 const wrapper = {
   display: 'flex',
   alignItems: 'center',
@@ -142,6 +163,7 @@ const headingStyle = {
   fontSize: '24px',
   marginBottom: '1rem',
   color: '#333',
+  textAlign:'center'
 };
 
 

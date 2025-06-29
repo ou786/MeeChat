@@ -30,10 +30,17 @@ function EmailLogin({ onLogin , setIsRegistering}) {
 
   return (
   <div style={wrapper}>
-    <form style={form} onSubmit={(e) => {
-      e.preventDefault();
-      handleLogin();
-    }}>
+    <form
+      style={form}
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleLogin();
+      }}
+    >
+      {/* App Title */}
+      <h1 style={appTitle}>MeeChat</h1>
+      <p style={tagline}>Connect<span style={{ margin: '0 4px' }}>.</span>Chat<span style={{ margin: '0 4px' }}>.</span>Feel Belonged...</p>
+
       <h2 style={heading}>Login</h2>
 
       <input
@@ -54,23 +61,22 @@ function EmailLogin({ onLogin , setIsRegistering}) {
       <button type="submit" style={button}>Login</button>
 
       <p style={{ marginTop: '1rem', textAlign: 'center' }}>
-  <button
-    type="button"
-    style={{
-      border: 'none',
-      background: 'none',
-      color: '#007bff',
-      cursor: 'pointer',
-      fontSize: '1rem',
-      textDecoration: 'underline',
-      padding: '0.5rem',
-    }}
-    onClick={() => setIsResetting(true)}
-  >
-    Forgot Password?
-  </button>
-</p>
-
+        <button
+          type="button"
+          style={{
+            border: 'none',
+            background: 'none',
+            color: '#007bff',
+            cursor: 'pointer',
+            fontSize: '1rem',
+            textDecoration: 'underline',
+            padding: '0.5rem',
+          }}
+          onClick={() => setIsResetting(true)}
+        >
+          Forgot Password?
+        </button>
+      </p>
 
       <p style={switchText}>
         Don't have an account?{' '}
@@ -78,8 +84,6 @@ function EmailLogin({ onLogin , setIsRegistering}) {
           Register
         </button>
       </p>
-      
-
 
       {error && <p style={errorText}>{error}</p>}
     </form>
@@ -87,7 +91,24 @@ function EmailLogin({ onLogin , setIsRegistering}) {
 );
 
 
+
 }
+
+const appTitle = {
+  textAlign: 'center',
+  fontSize: '2.5rem',
+  fontWeight: 'bold',
+  marginBottom: '0.5rem',
+  color: '#007bff', // or any theme color you want
+};
+
+const tagline = {
+  textAlign: 'center',
+  fontSize: '16px',
+  fontStyle: 'italic',
+  color: '#555',
+  marginBottom: '1.5rem',
+};
 
 const wrapper = {
   display: 'flex',
@@ -136,7 +157,7 @@ const button = {
 const switchText = {
   marginTop: '1rem',
   textAlign: 'center',
-  fontSize: '14px',
+  fontSize: '15px',
 };
 
 const linkBtn = {
@@ -145,6 +166,7 @@ const linkBtn = {
   color: '#007bff',
   cursor: 'pointer',
   fontWeight: 'bold',
+  fontSize:'15px',
 };
 
 const errorText = {
